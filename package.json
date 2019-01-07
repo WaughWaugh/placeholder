@@ -53,11 +53,6 @@
     "tap-spec": "^5.0.0",
     "tape": "^4.8.0"
   },
-  "pre-commit": [
-    "lint",
-    "validate",
-    "test"
-  ],
   "release": {
     "branch": "master",
     "success": []

@@ -20,7 +20,8 @@ function getParentIds(doc) {
 }
 
 function search(input, placetype, callback) {
-  console.log(input);
+  console.log("Placeholder input: " + input);
+
   ph.query(input, (err, res) => {
 
     ph.store.get( res.getIdsAsArray()[0], (err, doc) => {
