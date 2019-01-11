@@ -44,6 +44,8 @@ function search(input, placetype, callback) {
 
       if( doc.lineage ) {
 
+	 console.error("Fetching parents");
+
      	 ph.store.getMany( parentIds, ( err, parentResults ) => {
      	   
      	   if( err ) { console.error( "Error fetching parentIds" ); }
