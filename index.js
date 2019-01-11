@@ -20,7 +20,7 @@ function getParentIds(doc) {
 }
 
 function search(input, placetype, callback) {
-  console.error("Placeholder input: " + input);
+  console.log("Placeholder input: " + input);
 
   ph.query(input, (err, res) => {
 
@@ -28,10 +28,8 @@ function search(input, placetype, callback) {
 
       if (doc == null || ( placetype != null && doc.placetype != placetype ) ) { callback([]); }
 
-      console.error("===PH search===");
-      console.error(JSON.stringify(doc, null, 2));
-
-      const parentIds = getParentIds(doc); 
+      console.log("===PH search===");
+      console.log(JSON.stringify(doc, null, 2));
 
       var output = [];
      
@@ -43,8 +41,9 @@ function search(input, placetype, callback) {
       });
 
       if( doc.lineage ) {
+         const parentIds = getParentIds(doc); 
 
-	 console.error("Fetching parents");
+	 console.log("Fetching parents");
 
      	 ph.store.getMany( parentIds, ( err, parentResults ) => {
      	   
