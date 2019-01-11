@@ -23,51 +23,65 @@ function search(input, placetype, callback) {
   console.log("Placeholder input: " + input);
 
   ph.query(input, (err, res) => {
+    try { 
+      ph.store.get( res.getIdsAsArray()[0], (err, doc) => {
 
-    ph.store.get( res.getIdsAsArray()[0], (err, doc) => {
+       try {
 
-      if (doc == null || ( placetype != null && doc.placetype != placetype ) ) { callback([]); }
+        if (doc == null || ( placetype != null && doc.placetype != placetype ) ) { callback([]); }
 
-      console.log("===PH search===");
-      console.log(JSON.stringify(doc, null, 2));
+        console.log("===PH search===");
+        console.log(JSON.stringify(doc, null, 2));
 
-      var output = [];
-     
-      output.push({
-     	  id: doc.id,
-     	  name: doc.name,
-     	  abbr: doc.abbr,
-     	  placetype: doc.placetype
-      });
+        var output = [];
+       
+        output.push({
+       	  id: doc.id,
+       	  name: doc.name,
+       	  abbr: doc.abbr,
+       	  placetype: doc.placetype
+        });
 
-      if( doc.lineage ) {
-         const parentIds = getParentIds(doc); 
+        if( doc.lineage ) {
+           const parentIds = getParentIds(doc); 
 
-	 console.log("Fetching parents");
+           console.log("Fetching parents");
 
-     	 ph.store.getMany( parentIds, ( err, parentResults ) => {
-     	   
-     	   if( err ) { console.error( "Error fetching parentIds" ); }
+       	 ph.store.getMany( parentIds, ( err, parentResults ) => {
+       	   
+       	   if( err ) { console.error( "Error fetching parentIds" ); }
 
-     	   parentResults = parentResults || [];
+             try {
+       	      parentResults = parentResults || [];
 
-     	   parentResults.forEach( function( parentResult ) {
-     	      output.push({
-     	   	id: parentResult.id,
-     	   	name: parentResult.name,
-     	   	abbr: parentResult.abbr,
-     	   	placetype: parentResult.placetype
-     	      });
-     	   });
+       	      parentResults.forEach( function( parentResult ) {
+       	         output.push({
+       	            id: parentResult.id,
+       	            name: parentResult.name,
+       	      	    abbr: parentResult.abbr,
+       	      	    placetype: parentResult.placetype
+       	         });
+       	      });
+             } catch (err) {
+               console.error("ph.store.getMany: " + err);
+             }
 
-     	   callback(output);
-     	 });
+       	   callback(output);
+       	 });
 
-      } else {
+        } else {
 
- 	callback(output);
+          callback(output);
+        }
+      } catch (err) {
+        console.error("ph.store.getMany " + err);
+        callback([]);
       }
     });
+   } catch (err) {
+     console.error("plceholder query " + err);
+     callbck([]);
+   }
   });
 }
 
