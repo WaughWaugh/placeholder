@@ -20,7 +20,7 @@ function getParentIds(doc) {
 }
 
 function search(input, placetype, callback) {
-  console.log("Placeholder input: " + input);
+  console.error("Placeholder input: " + input);
 
   ph.query(input, (err, res) => {
 
@@ -28,38 +28,44 @@ function search(input, placetype, callback) {
 
       if (doc == null || ( placetype != null && doc.placetype != placetype ) ) { callback([]); }
 
-      console.log("===PH search===");
-      console.log(JSON.stringify(doc, null, 2));
+      console.error("===PH search===");
+      console.error(JSON.stringify(doc, null, 2));
 
       const parentIds = getParentIds(doc); 
 
-      ph.store.getMany( parentIds, ( err, parentResults ) => {
-        
-        if( err ) { console.error( "Error fetching parentIds" ); }
-
-	var output = [];
-
-	output.push({
-	  id: doc.id,
-	  name: doc.name,
-	  abbr: doc.abbr,
-	  placetype: doc.placetype
-	});
-
-	parentResults = parentResults || [];
-
-	parentResults.forEach( function( parentResult ) {
-	   output.push({
-		id: parentResult.id,
-		name: parentResult.name,
-		abbr: parentResult.abbr,
-		placetype: parentResult.placetype
-	   });
-	});
-
-	callback(output);
-	
+      var output = [];
+     
+      output.push({
+     	  id: doc.id,
+     	  name: doc.name,
+     	  abbr: doc.abbr,
+     	  placetype: doc.placetype
       });
+
+      if( doc.lineage ) {
+
+     	 ph.store.getMany( parentIds, ( err, parentResults ) => {
+     	   
+     	   if( err ) { console.error( "Error fetching parentIds" ); }
+
+     	   parentResults = parentResults || [];
+
+     	   parentResults.forEach( function( parentResult ) {
+     	      output.push({
+     	   	id: parentResult.id,
+     	   	name: parentResult.name,
+     	   	abbr: parentResult.abbr,
+     	   	placetype: parentResult.placetype
+     	      });
+     	   });
+
+     	   callback(output);
+     	 });
+
+      } else {
+
+ 	callback(output);
+      }
     });
   });
 }
