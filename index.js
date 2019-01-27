@@ -10,91 +10,113 @@ ph.load();
 var cache = {};
 
 function getParentIds(doc) {
-   const parentIds = {};
+    const parentIds = {};
 
-   doc.lineage.forEach( function ( lineage ) {
-     for ( var attr in lineage ) {
-       parentIds[ lineage[attr] ] = true;
-     }
-   });
+    doc.lineage.forEach(function (lineage) {
+        for (var attr in lineage) {
+            parentIds[lineage[attr]] = true;
+        }
+    });
 
-   return Object.keys( parentIds );
+    return Object.keys(parentIds);
 }
 
 function search(input, placetype, callback) {
-  console.log("Placeholder input: " + input);
+    console.log("Placeholder input: " + input);
 
-  if( cache.input == input) {
-    console.log("Served from cache: input= " + input);
+    if (cache.input == input) {
+        console.log("Served from cache: input= " + input);
 
-    callback( cache.output );
-  } else { 
+        callback(cache.output);
+    } else {
 
- 	 ph.query(input, (err, res) => {
- 	   try { 
- 	     ph.store.get( res.getIdsAsArray()[0], (err, doc) => {
+        ph.query(input, (err, res) => {
+            try {
+                ph.store.get(res.getIdsAsArray(), (err, documents) => {
 
- 	      try {
+                    documents.sort(sortingAlgorithm);
 
- 	       if (doc == null || ( placetype != null && doc.placetype != placetype ) ) { callback([]); }
+                    documents.forEach(function (doc) {
+                        try {
 
- 	       console.log("===PH search===");
- 	       console.log(JSON.stringify(doc, null, 2));
+                            if (doc == null || (placetype != null && doc.placetype != placetype)) { callback([]); }
 
- 	       var output = [];
- 	      
- 	       output.push({
- 	      	  id: doc.id,
- 	      	  name: doc.name,
- 	      	  abbr: doc.abbr,
- 	      	  placetype: doc.placetype
- 	       });
+                            console.log("===PH search===");
+                            console.log(JSON.stringify(doc, null, 2));
 
- 	       if( doc.lineage ) {
- 	          const parentIds = getParentIds(doc); 
+                            var output = [];
 
- 	          console.log("Fetching parents");
+                            output.push({
+                                id: doc.id,
+                                name: doc.name,
+                                abbr: doc.abbr,
+                                placetype: doc.placetype
+                            });
 
- 	      	 ph.store.getMany( parentIds, ( err, parentResults ) => {
- 	      	   
- 	      	   if( err ) { console.error( "Error fetching parentIds" ); }
+                            if (doc.lineage) {
+                                const parentIds = getParentIds(doc);
 
- 	            try {
- 	      	      parentResults = parentResults || [];
+                                console.log("Fetching parents");
 
- 	      	      parentResults.forEach( function( parentResult ) {
- 	      	         output.push({
- 	      	            id: parentResult.id,
- 	      	            name: parentResult.name,
- 	      	      	    abbr: parentResult.abbr,
- 	      	      	    placetype: parentResult.placetype
- 	      	         });
- 	      	      });
- 	            } catch (err) {
- 	              console.error("ph.store.getMany: " + err);
- 	            }
+                                ph.store.getMany(parentIds, (err, parentResults) => {
 
- 	          cache.input = input;
- 	          cache.output = output;
+                                    if (err) { console.error("Error fetching parentIds"); }
 
- 	      	   callback(output);
- 	      	 });
+                                    try {
+                                        parentResults = parentResults || [];
 
- 	       } else {
+                                        parentResults.forEach(function (parentResult) {
+                                            output.push({
+                                                id: parentResult.id,
+                                                name: parentResult.name,
+                                                abbr: parentResult.abbr,
+                                                placetype: parentResult.placetype
+                                            });
+                                        });
+                                    } catch (err) {
+                                        console.error("ph.store.getMany: " + err);
+                                    }
 
- 	         callback(output);
- 	       }
- 	     } catch (err) {
- 	       console.error("ph.store.getMany " + err);
- 	       callback([]);
- 	     }
- 	   });
- 	  } catch (err) {
- 	    console.error("plceholder query " + err);
- 	    callbck([]);
- 	  }
- 	 });
+                                    cache.input = input;
+                                    cache.output = output;
+
+                                    callback(output);
+                                });
+
+                            } else {
+
+                                callback(output);
+                            }
+                        } catch (err) {
+                            console.error("ph.store.getMany " + err);
+                            callback([]);
+                        }
+
+                    }); //SB -End
+                });
+            } catch (err) {
+                console.error("plceholder query " + err);
+                callbck([]);
+            }
+        });
     }
+}
+
+function sortingAlgorithm(a, b) {
+
+    // condition 1 - population
+    const a1 = a.population || 0;
+    const b1 = b.population || 0;
+
+    // condition 2 - geom.area
+    const a2 = a.geom && a.geom.area || 0;
+    const b2 = b.geom && b.geom.area || 0;
+
+    if (a1 < b1) { return +1; }
+    if (a1 > b1) { return -1; }
+    if (a2 < b2) { return +1; }
+    if (a2 > b2) { return -1; }
+    return 0;
 }
 
 module.exports.search = search;
