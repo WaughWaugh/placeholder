@@ -7,6 +7,7 @@ var Placeholder = require('./Placeholder'),
 // init placeholder
 ph.load();
 
+
 var cache = {};
 
 function getParentIds(doc) {
@@ -32,9 +33,13 @@ function search(input, placetype, callback) {
 
         ph.query(input, (err, res) => {
             try {
-                ph.store.get(res.getIdsAsArray(), (err, documents) => {
+                ph.store.getMany(res.getIdsAsArray(), (err, documents) => {
 
+                    console.log("Initial resulst: ");
+                    console.log(JSON.stringify(documents, null, 2));
+                    console.log("After sorting:");
                     documents.sort(sortingAlgorithm);
+                    console.log(JSON.stringify(documents, null, 2));
 
                     documents.forEach(function (doc) {
                         try {
