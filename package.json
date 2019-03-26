@@ -39,12 +39,13 @@
     "lodash": "^4.17.4",
     "lower-case": "^1.1.4",
     "morgan": "^1.9.0",
+    "pelias-blacklist-stream": "^1.1.0",
     "pelias-logger": "^1.2.1",
     "remove-accents": "^0.4.0",
     "require-dir": "^1.0.0",
     "sorted-intersect": "^0.1.4",
     "split2": "^3.0.0",
-    "through2": "^2.0.3"
+    "through2": "^3.0.0"
   },
   "devDependencies": {
     "istanbul": "^0.4.2",
