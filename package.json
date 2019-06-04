@@ -57,5 +57,7 @@
   "release": {
     "branch": "master",
     "success": []
-  }
+  },
+  "pre-commit": [
+  ]
 }
